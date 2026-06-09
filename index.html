@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense - Défendez votre base</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Menu Principal -->
+        <div id="mainMenu" class="menu-screen active">
+            <div class="menu-container">
+                <h1>TOWER DEFENSE</h1>
+                <p class="subtitle">Défendez votre base contre les envahisseurs!</p>
+                
+                <div class="menu-section">
+                    <label for="gameMode">Mode de jeu:</label>
+                    <select id="gameMode">
+                        <option value="solo">Solo (contre l'IA)</option>
+                        <option value="pvp">PvP (contre un joueur)</option>
+                        <option value="survival">Survie (vagues infinies)</option>
+                    </select>
+                </div>
+
+                <div class="menu-section">
+                    <label for="mapSelect">Carte:</label>
+                    <select id="mapSelect">
+                        <option value="default">Plaine Standard</option>
+                        <option value="forest">Forêt Enneigée</option>
+                        <option value="desert">Désert Rocheux</option>
+                        <option value="custom">Personnalisée</option>
+                    </select>
+                </div>
+
+                <div class="menu-section">
+                    <label for="difficulty">Difficulté:</label>
+                    <select id="difficulty">
+                        <option value="easy">Facile</option>
+                        <option value="normal">Normal</option>
+                        <option value="hard">Difficile</option>
+                        <option value="extreme">Extrême</option>
+                    </select>
+                </div>
+
+                <button id="playBtn" class="btn btn-primary">Jouer</button>
+                <button id="editorBtn" class="btn btn-secondary">Éditeur de Cartes</button>
+                <button id="settingsBtn" class="btn btn-secondary">Paramètres</button>
+            </div>
+        </div>
+
+        <!-- Écran de Jeu -->
+        <div id="gameScreen" class="game-screen">
+            <!-- Canvas Principal -->
+            <canvas id="gameCanvas"></canvas>
+
+            <!-- HUD -->
+            <div class="hud">
+                <!-- Stats Principales -->
+                <div class="hud-panel stats-panel">
+                    <div class="stat">
+                        <span class="label">Santé:</span>
+                        <div class="health-bar">
+                            <div id="healthFill" class="health-fill"></div>
+                        </div>
+                        <span id="healthText" class="value">100/100</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Or:</span>
+                        <span id="goldText" class="value">500</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Vague:</span>
+                        <span id="waveText" class="value">1/10</span>
+                    </div>
+                </div>
+
+                <!-- Mini-carte -->
+                <div class="hud-panel minimap-panel">
+                    <canvas id="minimap" width="150" height="150"></canvas>
+                </div>
+
+                <!-- Inventaire/Tours -->
+                <div class="hud-panel inventory-panel">
+                    <h3>Tours Disponibles</h3>
+                    <div id="towerList" class="tower-list">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Escouade (Mode PvP) -->
+                <div class="hud-panel squad-panel" id="squadPanel" style="display: none;">
+                    <h3>Escouade</h3>
+                    <div id="squadList" class="squad-list">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Contrôles -->
+                <div class="hud-panel controls-panel">
+                    <button id="pauseBtn" class="btn btn-small">Pause (P)</button>
+                    <button id="speedBtn" class="btn btn-small">Vitesse: 1x</button>
+                    <button id="menuBtn" class="btn btn-small">Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modales -->
+        <!-- Pause -->
+        <div id="pauseModal" class="modal">
+            <div class="modal-content">
+                <h2>PAUSE</h2>
+                <button id="resumeBtn" class="btn btn-primary">Continuer</button>
+                <button id="settingsGameBtn" class="btn btn-secondary">Paramètres</button>
+                <button id="menuFromGameBtn" class="btn btn-secondary">Menu Principal</button>
+            </div>
+        </div>
+
+        <!-- Game Over -->
+        <div id="gameOverModal" class="modal">
+            <div class="modal-content">
+                <h2 id="gameOverTitle">DÉFAITE</h2>
+                <div id="statsContainer" class="game-stats">
+                    <!-- Rempli dynamiquement -->
+                </div>
+                <button id="restartBtn" class="btn btn-primary">Recommencer</button>
+                <button id="menuFromGameOverBtn" class="btn btn-secondary">Menu Principal</button>
+            </div>
+        </div>
+
+        <!-- Éditeur de Cartes -->
+        <div id="editorScreen" class="editor-screen">
+            <div class="editor-container">
+                <div class="editor-canvas-wrapper">
+                    <canvas id="editorCanvas"></canvas>
+                </div>
+                <div class="editor-toolbar">
+                    <h3>Outils</h3>
+                    <button id="drawPathBtn" class="tool-btn active">Tracer le Chemin</button>
+                    <button id="drawObstacleBtn" class="tool-btn">Ajouter Obstacle</button>
+                    <button id="placeSpawnBtn" class="tool-btn">Point de Spawn</button>
+                    <button id="placeEndBtn" class="tool-btn">Point d'Arrivée</button>
+                    <button id="clearBtn" class="btn btn-secondary">Effacer Tout</button>
+                    <button id="saveMapBtn" class="btn btn-primary">Sauvegarder</button>
+                    <button id="backBtn" class="btn btn-secondary">Retour</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paramètres -->
+        <div id="settingsScreen" class="settings-screen">
+            <div class="settings-container">
+                <h2>Paramètres</h2>
+                <div class="settings-group">
+                    <label>
+                        <input type="checkbox" id="soundToggle" checked>
+                        Son activé
+                    </label>
+                    <label>
+                        <input type="checkbox" id="musicToggle" checked>
+                        Musique activée
+                    </label>
+                    <label>
+                        <input type="checkbox" id="particlesToggle" checked>
+                        Effets visuels
+                    </label>
+                </div>
+                <div class="settings-group">
+                    <label for="volumeSlider">Volume: <span id="volumeValue">80</span>%</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="80">
+                </div>
+                <button id="closeSettingsBtn" class="btn btn-primary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils/Math.js"></script>
+    <script src="js/utils/Physics.js"></script>
+    <script src="js/utils/Pathfinding.js"></script>
+    <script src="js/utils/Renderer.js"></script>
+    <script src="js/entities/Entity.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Tower.js"></script>
+    <script src="js/entities/Enemy.js"></script>
+    <script src="js/entities/Projectile.js"></script>
+    <script src="js/entities/Particle.js"></script>
+    <script src="js/systems/PhysicsSystem.js"></script>
+    <script src="js/systems/RenderSystem.js"></script>
+    <script src="js/systems/InputSystem.js"></script>
+    <script src="js/systems/CollisionSystem.js"></script>
+    <script src="js/systems/WaveSystem.js"></script>
+    <script src="js/ai/AIBehavior.js"></script>
+    <script src="js/ai/PathfindingAI.js"></script>
+    <script src="js/managers/GameManager.js"></script>
+    <script src="js/managers/UIManager.js"></script>
+    <script src="js/managers/MapEditor.js"></script>
+    <script src="js/Game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
